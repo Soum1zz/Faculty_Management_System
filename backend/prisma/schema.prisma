@@ -44,7 +44,7 @@ model Faculty {
 }
 
 model SubjectTaught {
-  SubjectTaughtID Int    @id @default(autoincrement()) // new unique ID
+  SubjectTaughtID Int    @id @default(autoincrement()) 
   FacultyID       Int
   Level           String
   SubjectName     String

@@ -1,9 +1,10 @@
 // src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { adminAPI } from '../services/api';
 import PrimaryButton from '../components/PrimaryButton';
 
-const AdminDashboard = ({ user, navigate }) => {
+const AdminDashboard = ({ user }) => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [allFaculties, setAllFaculties] = useState([]);
   const [allDepartments, setAllDepartments] = useState([]);
@@ -11,6 +12,7 @@ const AdminDashboard = ({ user, navigate }) => {
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadPendingRequests();
@@ -101,7 +103,7 @@ const AdminDashboard = ({ user, navigate }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/')}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
                 title="Go to Dashboard"
               >

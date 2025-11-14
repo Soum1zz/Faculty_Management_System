@@ -5,6 +5,7 @@ import FormContainer from '../../components/FormContainer';
 import FormInput from '../../components/FormInput';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticDate, isStartBeforeEndOrOngoing } from '../../utils/dateValidation';
 
 const AddEventPage = () => {
     const navigate = useNavigate();
@@ -77,6 +78,21 @@ const AddEventPage = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        // Validate dates
+        const startDateCheck = isRealisticDate(formData.startDate);
+        if (!startDateCheck.valid) {
+            setError(startDateCheck.error);
+            setLoading(false);
+            return;
+        }
+
+        const dateRangeCheck = isStartBeforeEndOrOngoing(formData.startDate, formData.endDate);
+        if (!dateRangeCheck.valid) {
+            setError(dateRangeCheck.error);
+            setLoading(false);
+            return;
+        }
 
         try {
             const facultyId = JSON.parse(localStorage.getItem('user')).FacultyID;
@@ -196,6 +212,7 @@ const AddEventPage = () => {
                     value={formData.startDate}
                     onChange={handleChange}
                     required
+                    max={new Date().toISOString().split('T')[0]}
                 />
 
                 <FormInput
@@ -205,6 +222,7 @@ const AddEventPage = () => {
                     value={formData.endDate}
                     onChange={handleChange}
                     min={formData.startDate}
+                    max={new Date().toISOString().split('T')[0]}
                 />
 
                 <FormInput

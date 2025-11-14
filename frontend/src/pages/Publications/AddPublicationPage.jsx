@@ -5,6 +5,7 @@ import axios from '../../utils/axios';
 import FormInput from '../../components/FormInput';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticDate, isRealisticYear } from '../../utils/dateValidation';
 
 const AddPublicationPage = () => {
   const navigate = useNavigate();
@@ -96,6 +97,13 @@ const AddPublicationPage = () => {
     }
     if (!publication.publicationYear) {
       setError('Publication Year is required');
+      return;
+    }
+
+    // Validate publication year is realistic
+    const yearCheck = isRealisticYear(publication.publicationYear);
+    if (!yearCheck.valid) {
+      setError(yearCheck.error);
       return;
     }
 
@@ -200,6 +208,8 @@ const AddPublicationPage = () => {
               value={publication.publicationYear}
               onChange={handleInputChange}
               required
+              min="1900-01-01"
+              max={new Date().toISOString().split('T')[0]}
             />
 
             <FormInput

@@ -4,6 +4,7 @@ import axios from '../../utils/axios';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticYear } from '../../utils/dateValidation';
 
 const AwardsPage = () => {
     const [awards, setAwards] = useState([]);
@@ -62,34 +63,51 @@ const AwardsPage = () => {
                 <p className="text-gray-600 text-center">No awards found. Add your first award!</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {awards.map((award) => (
-                        <div key={award.AwardID} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-                            <h3 className="text-xl font-semibold mb-2">{award.AwardName}</h3>
-                            <p className="text-gray-600 mb-1">
-                                <span className="font-medium">Awarding Body:</span> {award.AwardingBody || 'N/A'}
-                            </p>
-                            <p className="text-gray-600 mb-1">
-                                <span className="font-medium">Location:</span> {award.Location || 'N/A'}
-                            </p>
-                            <p className="text-gray-600 mb-4">
-                                <span className="font-medium">Year:</span> {award.YearAwarded}
-                            </p>
-                            <div className="flex justify-end space-x-2">
-                                <button
-                                    onClick={() => navigate(`/awards/edit/${award.AwardID}`)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(award.AwardID)}
-                                    className="text-red-600 hover:text-red-800"
-                                >
-                                    Delete
-                                </button>
+                    {awards.map((award) => {
+                        const yearCheck = isRealisticYear(award.YearAwarded);
+                        const hasDateIssue = !yearCheck.valid;
+
+                        return (
+                            <div 
+                                key={award.AwardID} 
+                                className={`bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow border-l-4 ${
+                                    hasDateIssue ? 'border-l-yellow-400' : 'border-l-transparent'
+                                }`}
+                            >
+                                <h3 className="text-xl font-semibold mb-2">{award.AwardName}</h3>
+                                <p className="text-gray-600 mb-1">
+                                    <span className="font-medium">Awarding Body:</span> {award.AwardingBody || 'N/A'}
+                                </p>
+                                <p className="text-gray-600 mb-1">
+                                    <span className="font-medium">Location:</span> {award.Location || 'N/A'}
+                                </p>
+                                <p className="text-gray-600 mb-4">
+                                    <span className="font-medium">Year:</span> {award.YearAwarded}
+                                </p>
+                                
+                                {hasDateIssue && (
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
+                                        <p className="text-yellow-700 text-sm">⚠️ {yearCheck.error}</p>
+                                    </div>
+                                )}
+                                
+                                <div className="flex justify-end space-x-2">
+                                    <button
+                                        onClick={() => navigate(`/awards/edit/${award.AwardID}`)}
+                                        className="text-blue-600 hover:text-blue-800"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(award.AwardID)}
+                                        className="text-red-600 hover:text-red-800"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

@@ -5,6 +5,7 @@ import axios from '../../utils/axios';
 import FormInput from '../../components/FormInput';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticDate, isStartBeforeEndOrOngoing } from '../../utils/dateValidation';
 
 const AddResearchProjectPage = () => {
   const navigate = useNavigate();
@@ -62,6 +63,21 @@ const AddResearchProjectPage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate dates
+    const startDateCheck = isRealisticDate(project.StartDate);
+    if (!startDateCheck.valid) {
+      setError(startDateCheck.error);
+      setLoading(false);
+      return;
+    }
+
+    const dateRangeCheck = isStartBeforeEndOrOngoing(project.StartDate, project.EndDate);
+    if (!dateRangeCheck.valid) {
+      setError(dateRangeCheck.error);
+      setLoading(false);
+      return;
+    }
 
     try {
       const formData = {
@@ -127,6 +143,7 @@ const AddResearchProjectPage = () => {
               value={project.StartDate}
               onChange={handleInputChange}
               required
+              max={new Date().toISOString().split('T')[0]}
             />
 
             <FormInput
@@ -136,6 +153,8 @@ const AddResearchProjectPage = () => {
               value={project.EndDate}
               onChange={handleInputChange}
               helperText="Leave empty if project is ongoing"
+              min={project.StartDate}
+              max={new Date().toISOString().split('T')[0]}
             />
 
             <FormInput

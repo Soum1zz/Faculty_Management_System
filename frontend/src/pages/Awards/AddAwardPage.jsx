@@ -5,6 +5,7 @@ import FormContainer from '../../components/FormContainer';
 import FormInput from '../../components/FormInput';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticYear } from '../../utils/dateValidation';
 
 const AddAwardPage = () => {
     const navigate = useNavigate();
@@ -56,6 +57,14 @@ const AddAwardPage = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        // Validate year is not in future
+        const yearCheck = isRealisticYear(formData.yearAwarded);
+        if (!yearCheck.valid) {
+            setError(yearCheck.error);
+            setLoading(false);
+            return;
+        }
 
         try {
             const facultyId = JSON.parse(localStorage.getItem('user')).FacultyID;

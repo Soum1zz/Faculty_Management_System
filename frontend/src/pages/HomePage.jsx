@@ -6,7 +6,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Removed auto-redirect to allow viewing homepage
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">

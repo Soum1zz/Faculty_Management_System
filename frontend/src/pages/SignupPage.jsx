@@ -88,6 +88,16 @@ const SignupPage = () => {
       today.setHours(0, 0, 0, 0);
       if (selectedDate > today) {
         errs.dob = 'Date of Birth cannot be in the future.';
+      } else {
+        // Calculate age
+        let age = today.getFullYear() - selectedDate.getFullYear();
+        const monthDiff = today.getMonth() - selectedDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < selectedDate.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          errs.dob = 'You must be at least 18 years old to register.';
+        }
       }
     }
     if (!form.gender) errs.gender = 'Gender is required.';
@@ -147,7 +157,16 @@ const SignupPage = () => {
       
     } catch (error) {
       console.error('Signup error:', error);
-      setErrors({ submit: error.message || 'Failed to create account. Please try again.' });
+      
+      // Handle specific error messages from backend
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create account. Please try again.';
+      
+      // Check if it's an email already exists error
+      if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('unique')) {
+        setErrors({ email: errorMessage });
+      } else {
+        setErrors({ submit: errorMessage });
+      }
     } finally {
       setLoading(false);
     }
@@ -188,7 +207,7 @@ const SignupPage = () => {
           value={form.dob} 
           onChange={handleChange} 
           error={errors.dob}
-          max={new Date().toISOString().split('T')[0]}
+          max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
         />
         
         {/* Phone Number with character counter */}

@@ -5,6 +5,7 @@ import axios from '../../utils/axios';
 import FormInput from '../../components/FormInput';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticDate, isStartBeforeEndOrOngoing } from '../../utils/dateValidation';
 
 const AddTeachingExperiencePage = () => {
   const navigate = useNavigate();
@@ -60,6 +61,21 @@ const AddTeachingExperiencePage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate dates
+    const startDateCheck = isRealisticDate(experience.StartDate);
+    if (!startDateCheck.valid) {
+      setError(startDateCheck.error);
+      setLoading(false);
+      return;
+    }
+
+    const dateRangeCheck = isStartBeforeEndOrOngoing(experience.StartDate, experience.EndDate);
+    if (!dateRangeCheck.valid) {
+      setError(dateRangeCheck.error);
+      setLoading(false);
+      return;
+    }
 
     try {
       const formData = {
@@ -132,6 +148,7 @@ const AddTeachingExperiencePage = () => {
               value={experience.StartDate}
               onChange={handleInputChange}
               required
+              max={new Date().toISOString().split('T')[0]}
             />
 
             <FormInput
@@ -141,6 +158,8 @@ const AddTeachingExperiencePage = () => {
               value={experience.EndDate}
               onChange={handleInputChange}
               helperText="Leave empty if this is your current position"
+              min={experience.StartDate}
+              max={new Date().toISOString().split('T')[0]}
             />
 
             <div>

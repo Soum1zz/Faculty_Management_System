@@ -5,6 +5,7 @@ import FormContainer from '../../components/FormContainer';
 import FormInput from '../../components/FormInput';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { isRealisticDate } from '../../utils/dateValidation';
 
 const AddOutreachActivityPage = () => {
     const navigate = useNavigate();
@@ -68,6 +69,14 @@ const AddOutreachActivityPage = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        // Validate activity date is not in future
+        const dateCheck = isRealisticDate(formData.activityDate);
+        if (!dateCheck.valid) {
+            setError(dateCheck.error);
+            setLoading(false);
+            return;
+        }
 
         try {
             const facultyId = JSON.parse(localStorage.getItem('user')).FacultyID;
@@ -152,6 +161,7 @@ const AddOutreachActivityPage = () => {
                     value={formData.activityDate}
                     onChange={handleChange}
                     required
+                    max={new Date().toISOString().split('T')[0]}
                 />
 
                 <div className="space-y-1">

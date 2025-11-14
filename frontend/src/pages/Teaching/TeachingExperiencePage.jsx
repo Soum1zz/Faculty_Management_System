@@ -5,6 +5,7 @@ import { useAuth } from '../../store/auth.store';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { getDateIssues } from '../../utils/dateChecks';
 
 const TeachingExperiencePage = () => {
   const { user } = useAuth();
@@ -53,14 +54,14 @@ const TeachingExperiencePage = () => {
       {experiences.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">No teaching experience records found</p>
-          <Link to="/teaching/new" className="text-blue-500 hover:underline mt-2 inline-block">
+          <Link to="/teaching/experience/new" className="text-blue-500 hover:underline mt-2 inline-block">
             Add your first teaching experience
           </Link>
         </div>
       ) : (
         <div className="grid gap-6">
           {experiences.map((experience) => (
-            <ExperienceCard key={experience.SubjectTaughtID} experience={experience} />
+            <ExperienceCard key={experience.ExperienceID} experience={experience} />
           ))}
         </div>
       )}
@@ -69,37 +70,52 @@ const TeachingExperiencePage = () => {
 };
 
 const ExperienceCard = ({ experience }) => {
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString();
+  };
+
+  // Check for date validation issues
+  const { hasIssue, issues } = getDateIssues(experience, { 
+    start: 'StartDate', 
+    end: 'EndDate' 
+  });
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+    <div className={`bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow ${hasIssue ? 'border-l-4 border-yellow-400' : ''}`}>
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold">{experience.SubjectName}</h3>
-          <div className="mt-2 space-y-1">
-            <p className="text-gray-600">
-              <span className="font-medium">Level:</span> {experience.Level}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-medium">Academic Year:</span> {experience.AcademicYear}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-medium">Semester:</span> {experience.Semester}
-            </p>
-            {experience.SubjectCode && (
-              <p className="text-gray-600">
-                <span className="font-medium">Subject Code:</span> {experience.SubjectCode}
-              </p>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold">{experience.Designation}</h3>
+            {hasIssue && (
+              <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded">
+                ⚠️ Date Issue
+              </span>
             )}
-            {experience.Credits && (
+          </div>
+          <p className="text-gray-500 text-sm">{experience.OrganizationName}</p>
+          <div className="mt-4 space-y-2">
+            <p className="text-gray-600">
+              <span className="font-medium">Duration:</span> {formatDate(experience.StartDate)} to {formatDate(experience.EndDate)}
+            </p>
+            {hasIssue && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-sm text-yellow-800">
+                {issues.map((issue, idx) => (
+                  <p key={idx}>⚠️ {issue}</p>
+                ))}
+              </div>
+            )}
+            {experience.NatureOfWork && (
               <p className="text-gray-600">
-                <span className="font-medium">Credits:</span> {experience.Credits}
+                <span className="font-medium">Nature of Work:</span> {experience.NatureOfWork}
               </p>
             )}
           </div>
         </div>
         
         <div className="flex gap-2">
-          <Link 
-            to={`/teaching/edit/${experience.SubjectTaughtID}`}
+          <Link
+            to={`/teaching/experience/edit/${experience.ExperienceID}`}
             className="text-blue-500 hover:text-blue-600"
           >
             Edit

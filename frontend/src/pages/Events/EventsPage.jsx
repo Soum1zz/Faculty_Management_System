@@ -4,6 +4,7 @@ import axios from '../../utils/axios';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PrimaryButton from '../../components/PrimaryButton';
 import BackButton from '../../components/BackButton';
+import { getDateIssues } from '../../utils/dateChecks';
 
 const EventsPage = () => {
     const [events, setEvents] = useState([]);
@@ -89,70 +90,95 @@ const EventsPage = () => {
                 <p className="text-gray-600 text-center">No events found. Add your first event!</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {events.map((event) => (
-                        <div key={event.EventOrganisedID} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-xl font-semibold">{event.Title}</h3>
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(event.Role)}`}>
-                                    {event.Role}
-                                </span>
+                    {events.map((event) => {
+                        // Check for date validation issues
+                        const { hasIssue: hasDateIssue, issues } = getDateIssues(event, { 
+                          start: 'StartDate', 
+                          end: 'EndDate' 
+                        });
+
+                        return (
+                            <div key={event.EventOrganisedID} className={`bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow ${hasDateIssue ? 'border-l-4 border-yellow-400' : ''}`}>
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-xl font-semibold">{event.Title}</h3>
+                                            {hasDateIssue && (
+                                                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded">
+                                                    ⚠️ Date Issue
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(event.Role)}`}>
+                                        {event.Role}
+                                    </span>
+                                </div>
+                                
+                                <p className="text-gray-600 mb-2">
+                                    <span className="font-medium">Type:</span> {getEventTypeLabel(event.Event)}
+                                </p>
+                                
+                                {event.Organizer && (
+                                    <p className="text-gray-600 mb-2">
+                                        <span className="font-medium">Organizer:</span> {event.Organizer}
+                                    </p>
+                                )}
+                                
+                                {event.Location && (
+                                    <p className="text-gray-600 mb-2">
+                                        <span className="font-medium">Location:</span> {event.Location}
+                                    </p>
+                                )}
+                                
+                                <p className="text-gray-600 mb-2">
+                                    <span className="font-medium">Start Date:</span> {formatDate(event.StartDate)}
+                                </p>
+                                
+                                {event.EndDate && (
+                                    <p className="text-gray-600 mb-2">
+                                        <span className="font-medium">End Date:</span> {formatDate(event.EndDate)}
+                                    </p>
+                                )}
+
+                                {hasDateIssue && (
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-sm text-yellow-800 mb-4">
+                                        {issues.map((issue, idx) => (
+                                          <p key={idx}>⚠️ {issue}</p>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {event.FundingAgency && (
+                                    <p className="text-gray-600 mb-2">
+                                        <span className="font-medium">Funding Agency:</span> {event.FundingAgency}
+                                    </p>
+                                )}
+                                
+                                {event.Description && (
+                                    <p className="text-gray-600 mb-4">
+                                        <span className="font-medium">Description:</span><br />
+                                        {event.Description}
+                                    </p>
+                                )}
+                                
+                                <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
+                                    <button
+                                        onClick={() => navigate(`/events/edit/${event.EventOrganisedID}`)}
+                                        className="text-blue-600 hover:text-blue-800"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(event.EventOrganisedID)}
+                                        className="text-red-600 hover:text-red-800"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <p className="text-gray-600 mb-2">
-                                <span className="font-medium">Type:</span> {getEventTypeLabel(event.Event)}
-                            </p>
-                            
-                            {event.Organizer && (
-                                <p className="text-gray-600 mb-2">
-                                    <span className="font-medium">Organizer:</span> {event.Organizer}
-                                </p>
-                            )}
-                            
-                            {event.Location && (
-                                <p className="text-gray-600 mb-2">
-                                    <span className="font-medium">Location:</span> {event.Location}
-                                </p>
-                            )}
-                            
-                            <p className="text-gray-600 mb-2">
-                                <span className="font-medium">Start Date:</span> {formatDate(event.StartDate)}
-                            </p>
-                            
-                            {event.EndDate && (
-                                <p className="text-gray-600 mb-2">
-                                    <span className="font-medium">End Date:</span> {formatDate(event.EndDate)}
-                                </p>
-                            )}
-                            
-                            {event.FundingAgency && (
-                                <p className="text-gray-600 mb-2">
-                                    <span className="font-medium">Funding Agency:</span> {event.FundingAgency}
-                                </p>
-                            )}
-                            
-                            {event.Description && (
-                                <p className="text-gray-600 mb-4">
-                                    <span className="font-medium">Description:</span><br />
-                                    {event.Description}
-                                </p>
-                            )}
-                            
-                            <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
-                                <button
-                                    onClick={() => navigate(`/events/edit/${event.EventOrganisedID}`)}
-                                    className="text-blue-600 hover:text-blue-800"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(event.EventOrganisedID)}
-                                    className="text-red-600 hover:text-red-800"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
